@@ -1,113 +1,235 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Icon } from "@iconify/react";
+import { routes } from "./routes";
 
 export default function Home() {
+  const [project, setProject] = useState<typeof routes>(routes);
+
+  const [fileSelected, setFileSelected] = useState<string>("teste.txt");
+  const [isProjectCollapsed, setIsProjectCollapsed] = useState<boolean>(false);
+  const [fileContent, setFileContent] = useState<JSX.Element | undefined>(
+    undefined,
+  );
+
+  function handleCloseFolder(folder: string) {
+    setProject({
+      ...project,
+      [folder]: { ...project[folder], isClosed: !project[folder].isClosed },
+    });
+  }
+
+  useEffect(() => {
+    const currentFile = Object.values(project)
+      .flatMap(({ files }) => files)
+      .find(({ name }) => name === fileSelected);
+
+    setFileContent(currentFile?.content);
+  }, [project, fileSelected]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div
+      className="h-screen flex items-center justify-center select-none"
+      style={{
+        backgroundImage: "linear-gradient(180deg, #00070f 0%, #121521 100%)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <main className="rounded-lg bg-base-300 h-5/6 w-9/12 flex *:flex flex-col shadow-md">
+        {/* Topbar */}
+        <section className="w-full h-14 *:flex *:flex-1 *:items-center border-b items-center px-3">
+          <div className="gap-5">
+            <Icon icon="vscode-icons:file-type-vscode" className="size-6" />
+            <button>File</button>
+            <button>Edit</button>
+            <button>Selection</button>
+            <button>View</button>
+          </div>
+          {/* Search bar */}
+          <button className="bg-base-200 self-center my-0.5 py-1 gap-2 items-center justify-center font-medium rounded-md border">
+            <Icon icon="codicon:search" />
+            Search
+          </button>
+          <div className="*:flex gap-10 justify-end pr-3">
+            <div className="gap-3 *:*:size-6">
+              <button>
+                <Icon icon="codicon:layout-sidebar-left" />
+              </button>
+              <button>
+                <Icon icon="codicon:layout-panel" />
+              </button>
+              <button>
+                <Icon icon="codicon:layout-sidebar-right-off" />
+              </button>
+              <button>
+                <Icon icon="codicon:layout" />
+              </button>
+            </div>
+            <div className="gap-6 *:*:size-6">
+              <button>
+                <Icon icon="codicon:chrome-minimize" />
+              </button>
+              <button>
+                <Icon icon="codicon:chrome-maximize" />
+              </button>
+              <button>
+                <Icon icon="codicon:chrome-close" />
+              </button>
+            </div>
+          </div>
+        </section>
+        <div className="h-full">
+          {/* Navbar */}
+          <section className="flex flex-col *:flex *:flex-col flex-none justify-between *:*:*:size-7 *:*:p-3 border-r">
+            <div>
+              <button className="border-l-accent border-l-2">
+                <Icon icon="codicon:files" />
+              </button>
+              <button>
+                <Icon icon="codicon:search" />
+              </button>
+              <button>
+                <Icon
+                  icon="codicon:git-merge"
+                  className="transform scale-y-[-1]"
+                />
+              </button>
+              <button>
+                <Icon icon="codicon:debug-alt" />
+              </button>
+              <button>
+                <Icon icon="codicon:extensions" />
+              </button>
+              <button>
+                <Icon icon="codicon:beaker" />
+              </button>
+            </div>
+            <div>
+              <button>
+                <Icon icon="codicon:account" />
+              </button>
+              <button>
+                <Icon icon="codicon:settings-gear" />
+              </button>
+            </div>
+          </section>
+          {/* File explorer */}
+          <section className="flex-1 *:flex flex-col border-r">
+            <div className="justify-between py-2 px-4 items-center">
+              <span className="text-sm">EXPLORER</span>
+              <button>
+                <Icon icon="codicon:ellipsis" />
+              </button>
+            </div>
+            <div className="px-1 flex-col">
+              <button
+                onClick={() => {
+                  setIsProjectCollapsed(!isProjectCollapsed);
+                }}
+                className="flex items-center gap-1 font-medium my-0.5"
+              >
+                {isProjectCollapsed ? (
+                  <Icon icon="codicon:chevron-right" />
+                ) : (
+                  <Icon icon="codicon:chevron-down" />
+                )}
+                Projeto
+              </button>
+
+              {!isProjectCollapsed &&
+                // Folder list
+                Object.entries(project).map(
+                  (
+                    [folder, { files, iconOpened, iconClosed, isClosed }],
+                    index,
+                  ) => {
+                    return (
+                      <div key={index}>
+                        <button
+                          className="flex items-center gap-1.5 px-4 my-0.5"
+                          onClick={() => {
+                            handleCloseFolder(folder);
+                          }}
+                        >
+                          {/* Maybe pre load */}
+                          <Icon icon={isClosed ? iconClosed : iconOpened} />
+                          {folder}
+                        </button>
+
+                        {!isClosed && (
+                          <div className="*:px-8 *:flex *:items-center *:gap-1 *:mb-0.5 my-0.5">
+                            {files.map(({ name }) => {
+                              return (
+                                <button
+                                  key={name}
+                                  className="truncate"
+                                  onClick={() => {
+                                    setFileSelected(name);
+                                  }}
+                                >
+                                  <Icon icon="vscode-icons:default-file" />{" "}
+                                  {name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  },
+                )}
+            </div>
+          </section>
+          <section className="flex-[4_4_0%] flex-col bg-base-100">
+            <div className="flex border-b bg-base-300">
+              <div className="flex gap-1 items-center border-t-accent border-t-2 px-4 py-2 bg-base-100">
+                <Icon icon="vscode-icons:default-file" />
+                {fileSelected}
+                <button>
+                  <Icon icon="codicon:chrome-close" className="ml-2" />
+                </button>
+              </div>
+            </div>
+            <div className="mx-3 my-2">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-1 mb-2">
+                Pasta <Icon icon="codicon:chevron-right" />
+                {fileSelected}
+              </div>
+              {/* Lines */}
+              <code className="select-text *:before:mx-5 *:before:text-[#808080]">
+                {fileContent && fileContent}
+              </code>
+            </div>
+          </section>
         </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {/* Bottom Bar */}
+        <section className="items-center *:*:flex *:*:items-center *:*:gap-0.5 justify-between border-t">
+          <div className="flex gap-2">
+            <div className="bg-accent px-2.5 py-1.5 rounded-bl-md">
+              <Icon icon="codicon:remote" />
+            </div>
+            <div>
+              <Icon icon="codicon:error" />0
+            </div>
+            <div>
+              <Icon icon="codicon:warning" />0
+            </div>
+            <div>
+              <Icon icon="codicon:radio-tower" />0
+            </div>
+          </div>
+          <div className="flex gap-5 pr-3">
+            <span>Ln 5, Col 29</span>
+            <span>Spaces: 4</span>
+            <span>UTF-8</span>
+            <span>CRLF</span>
+            <Icon icon="codicon:bell" className="self-center" />
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }
