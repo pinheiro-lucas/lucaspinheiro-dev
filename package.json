@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv env.d.ts"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.2",
@@ -18,6 +22,8 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.12.0",
+    "@cloudflare/workers-types": "^4.20240620.0",
     "@iconify/react": "^5.0.1",
     "@types/node": "^20",
     "@types/react": "^18",
@@ -25,8 +31,11 @@
     "daisyui": "^4.12.10",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
+    "eslint-plugin-next-on-pages": "^1.12.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vercel": "^34.3.0",
+    "wrangler": "^3.63.1"
   }
 }
